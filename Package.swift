@@ -3,43 +3,38 @@ import PackageDescription
 
 let package = Package(
     name: "M13ProgressSuite",
-    // Минимальные версии, которые реальный код уже и так поддерживает
     platforms: [
-        .iOS(.v11),
-        .macOS(.v10_13),
-        .tvOS(.v11)
+        .iOS(.v11),         // библиотека исторически работает с iOS 7+, но SPM начинается с 11
+        .tvOS(.v11),
+        .macOS(.v10_13)
     ],
     products: [
-        // Будет подключаться в виде `import M13ProgressSuite`
         .library(
             name: "M13ProgressSuite",
-            targets: ["M13ProgressSuite"]
-        )
+            targets: ["M13ProgressSuite"])
     ],
     targets: [
-        // Основная цель с исходниками Objective-C
+        // ⬇︎ Основная цель с Objective-C-кодом
         .target(
             name: "M13ProgressSuite",
-            // Папка, где сейчас лежат *.m/ *.h (ничего переносить не нужно)
-            path: "Classes",
-            // SPM-у нужно знать, где «публичные» хедеры
-            publicHeadersPath: ".",
+            path: "Classes",              // там лежат все .m/.h
+            publicHeadersPath: ".",       // экспортируем всё, что в `Classes`
             cSettings: [
-                // Вдруг внутри есть #import <something/…> — на всякий случай
-                .headerSearchPath("."),
-                // Можно убрать, но полезно, если хотите условную компиляцию
+                // рекурсивно подхватываем сабдиректории
+                .headerSearchPath("**"),
                 .define("M13PROGRESS_SUITE_SPM")
+            ],
+            resources: [
+                // в коде используются картинки для README/HUD
+                .process("../ReadmeResources")
             ]
-            // Если в репозитории есть картинки или xib’ы,
-            // добавьте resources: [.process("Resources")]
         ),
 
-        // Необязательные тесты — если хотите запускать их из SPM
+        // ⬇︎ необязательно; подключит unit-тесты, если они нужны
         .testTarget(
             name: "M13ProgressSuiteTests",
-            dependencies: ["M13ProgressSuite"],
-            path: "M13ProgressSuiteTests"
-        )
+            path: "M13ProgressSuiteTests",
+            dependencies: ["M13ProgressSuite"])
     ],
     swiftLanguageVersions: [.v5]
 )
